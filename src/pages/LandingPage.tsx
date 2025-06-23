@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Home, TrendingUp } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import Navbar from "@/components/Navbar";
-import HowItWorks from "@/components/HowItWorks";
 import FeaturedProperties from "@/components/FeaturedProperties";
 import AboutUs from "@/components/AboutUs";
 import Testimonials from "@/components/Testimonials";
@@ -75,7 +74,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <HowItWorks />
+      {/* Removed HowItWorks component from here */}
 
       <FeaturedProperties />
 
