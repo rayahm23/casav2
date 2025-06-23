@@ -5,7 +5,8 @@ import { DollarSign, Home, TrendingUp } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import Navbar from "@/components/Navbar";
 import HowItWorks from "@/components/HowItWorks";
-import FeaturedProperties from "@/components/FeaturedProperties"; // Import the new FeaturedProperties component
+import FeaturedProperties from "@/components/FeaturedProperties";
+import AboutUs from "@/components/AboutUs"; // Import the new AboutUs component
 
 const LandingPage = () => {
   return (
@@ -72,7 +73,9 @@ const LandingPage = () => {
 
       <HowItWorks />
 
-      <FeaturedProperties /> {/* Add the FeaturedProperties section here */}
+      <FeaturedProperties />
+
+      <AboutUs /> {/* Add the AboutUs section here */}
 
       {/* Call to Action Section */}
       <section className="py-16 px-4 text-center bg-blue-600 dark:bg-blue-900 text-white">
