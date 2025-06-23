@@ -1,9 +1,12 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
-import { Link } from 'react-router-dom'; // Import Link
+import { Link } from 'react-router-dom';
+import SignUpDialog from './SignUpDialog'; // Import the new SignUpDialog
 
 const Navbar = () => {
+  const [isSignUpDialogOpen, setIsSignUpDialogOpen] = React.useState(false);
+
   return (
     <nav className="w-full bg-white dark:bg-gray-950 shadow-md py-4 px-6 flex justify-between items-center">
       <Link to="/" className="flex items-center space-x-2">
@@ -21,13 +24,22 @@ const Navbar = () => {
             Properties
           </Button>
         </Link>
-        <Button variant="ghost" className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 mr-2">
-          About Us
-        </Button>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+        <Link to="/about-us"> {/* Updated to Link to the new About Us page */}
+          <Button variant="ghost" className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 mr-2">
+            About Us
+          </Button>
+        </Link>
+        <Button
+          onClick={() => setIsSignUpDialogOpen(true)} // Open the dialog on click
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+        >
           Sign Up
         </Button>
       </div>
+      <SignUpDialog
+        isOpen={isSignUpDialogOpen}
+        onClose={() => setIsSignUpDialogOpen(false)}
+      />
     </nav>
   );
 };

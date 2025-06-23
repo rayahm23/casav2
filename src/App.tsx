@@ -8,7 +8,8 @@ import NotFound from "./pages/NotFound";
 import PropertiesPage from "./pages/PropertiesPage";
 import PropertyDetailsPage from "./pages/PropertyDetailsPage";
 import InvestmentPage from "./pages/InvestmentPage";
-import HowItWorksPage from "./pages/HowItWorksPage"; // Import the new HowItWorksPage
+import HowItWorksPage from "./pages/HowItWorksPage";
+import AboutUsPage from "./pages/AboutUsPage"; // Import the new AboutUsPage
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,8 @@ const App = () => (
           <Route path="/properties" element={<PropertiesPage />} />
           <Route path="/properties/:id" element={<PropertyDetailsPage />} />
           <Route path="/invest/:id" element={<InvestmentPage />} />
-          <Route path="/how-it-works" element={<HowItWorksPage />} /> {/* New route for How It Works page */}
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/about-us" element={<AboutUsPage />} /> {/* New route for About Us page */}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
