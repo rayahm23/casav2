@@ -5,9 +5,14 @@ interface PropertiesContextType {
   properties: Property[];
   getPropertyById: (id: number) => Property | undefined;
   simulateAllPricesChange: () => void;
+  buyShares: (propertyId: number, shares: number) => void;
+  sellShares: (propertyId: number, shares: number) => void;
 }
 
 const PropertiesContext = React.createContext<PropertiesContextType | undefined>(undefined);
+
+// Factor to determine how much price changes per share bought/sold
+const PRICE_IMPACT_FACTOR = 0.0005; // 0.05% change per share
 
 export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [properties, setProperties] = React.useState<Property[]>(initialProperties);
@@ -16,6 +21,31 @@ export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // Simulate a small random fluctuation, e.g., +/- 2%
     const fluctuation = (Math.random() * 0.04) - 0.02; // Random number between -0.02 and +0.02
     return basePrice * (1 + fluctuation);
+  };
+
+  const updatePropertyPrice = (
+    propertyId: number,
+    newPrice: number,
+    direction: 'up' | 'down' | 'stable'
+  ) => {
+    setProperties(prevProperties =>
+      prevProperties.map(p => {
+        if (p.id === propertyId) {
+          // Keep price history to a reasonable length, e.g., last 10 entries
+          const updatedPriceHistory = [...p.priceHistory, { timestamp: Date.now(), price: newPrice }];
+          if (updatedPriceHistory.length > 10) {
+            updatedPriceHistory.shift(); // Remove the oldest entry
+          }
+          return {
+            ...p,
+            currentSharePrice: newPrice,
+            priceChangeDirection: direction,
+            priceHistory: updatedPriceHistory,
+          };
+        }
+        return p;
+      })
+    );
   };
 
   const simulateAllPricesChange = () => {
@@ -27,10 +57,9 @@ export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const newPrice = generateDynamicPrice(baseSharePrice);
         const direction = newPrice > oldPrice ? 'up' : newPrice < oldPrice ? 'down' : 'stable';
 
-        // Keep price history to a reasonable length, e.g., last 10 entries
         const updatedPriceHistory = [...p.priceHistory, { timestamp: Date.now(), price: newPrice }];
         if (updatedPriceHistory.length > 10) {
-          updatedPriceHistory.shift(); // Remove the oldest entry
+          updatedPriceHistory.shift();
         }
 
         return {
@@ -39,6 +68,48 @@ export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           priceChangeDirection: direction,
           priceHistory: updatedPriceHistory,
         };
+      })
+    );
+  };
+
+  const buyShares = (propertyId: number, shares: number) => {
+    setProperties(prevProperties =>
+      prevProperties.map(p => {
+        if (p.id === propertyId) {
+          const newPrice = p.currentSharePrice * (1 + shares * PRICE_IMPACT_FACTOR);
+          const updatedPriceHistory = [...p.priceHistory, { timestamp: Date.now(), price: newPrice }];
+          if (updatedPriceHistory.length > 10) {
+            updatedPriceHistory.shift();
+          }
+          return {
+            ...p,
+            currentSharePrice: newPrice,
+            priceChangeDirection: 'up',
+            priceHistory: updatedPriceHistory,
+          };
+        }
+        return p;
+      })
+    );
+  };
+
+  const sellShares = (propertyId: number, shares: number) => {
+    setProperties(prevProperties =>
+      prevProperties.map(p => {
+        if (p.id === propertyId) {
+          const newPrice = p.currentSharePrice * (1 - shares * PRICE_IMPACT_FACTOR);
+          const updatedPriceHistory = [...p.priceHistory, { timestamp: Date.now(), price: newPrice }];
+          if (updatedPriceHistory.length > 10) {
+            updatedPriceHistory.shift();
+          }
+          return {
+            ...p,
+            currentSharePrice: newPrice,
+            priceChangeDirection: 'down',
+            priceHistory: updatedPriceHistory,
+          };
+        }
+        return p;
       })
     );
   };
@@ -58,7 +129,7 @@ export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, []);
 
   return (
-    <PropertiesContext.Provider value={{ properties, getPropertyById, simulateAllPricesChange }}>
+    <PropertiesContext.Provider value={{ properties, getPropertyById, simulateAllPricesChange, buyShares, sellShares }}>
       {children}
     </PropertiesContext.Provider>
   );

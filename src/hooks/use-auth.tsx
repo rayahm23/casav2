@@ -15,7 +15,7 @@ interface AuthContextType {
   userPortfolio: UserOwnedProperty[];
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  addPropertyToUserPortfolio: (propertyId: number, shares: number, purchasePrice: number) => void;
+  updatePropertyInUserPortfolio: (propertyId: number, sharesChange: number, currentSharePrice: number) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,10 +31,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session.user);
         // Simulate loading user's portfolio on login
         // In a real app, you'd fetch this from your database
-        setUserPortfolio([
-          { propertyId: 1, sharesOwned: 10, purchasePricePerShare: 75 }, // Example initial owned shares
-          { propertyId: 3, sharesOwned: 5, purchasePricePerShare: 81.67 }, // Example initial owned shares
-        ]);
+        // For now, we'll keep it empty on fresh login to show dynamic additions
+        setUserPortfolio([]);
       } else {
         setUser(null);
         setUserPortfolio([]); // Clear portfolio on logout
@@ -47,10 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         setUser(session.user);
         // Simulate loading user's portfolio on initial load
-        setUserPortfolio([
-          { propertyId: 1, sharesOwned: 10, purchasePricePerShare: 75 },
-          { propertyId: 3, sharesOwned: 5, purchasePricePerShare: 81.67 },
-        ]);
+        setUserPortfolio([]);
       }
       setLoading(false);
     });
@@ -84,15 +79,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   };
 
-  const addPropertyToUserPortfolio = (propertyId: number, shares: number, purchasePrice: number) => {
+  const updatePropertyInUserPortfolio = (propertyId: number, sharesChange: number, currentSharePrice: number) => {
     setUserPortfolio(prevPortfolio => {
       const existingPropertyIndex = prevPortfolio.findIndex(p => p.propertyId === propertyId);
 
       if (existingPropertyIndex > -1) {
-        // If property already exists, update shares and average purchase price
         const existing = prevPortfolio[existingPropertyIndex];
-        const newTotalShares = existing.sharesOwned + shares;
-        const newAveragePrice = ((existing.purchasePricePerShare * existing.sharesOwned) + (purchasePrice * shares)) / newTotalShares;
+        const newTotalShares = existing.sharesOwned + sharesChange;
+
+        if (newTotalShares <= 0) {
+          // Remove property if shares drop to 0 or below
+          return prevPortfolio.filter(p => p.propertyId !== propertyId);
+        }
+
+        // Calculate new average purchase price only if buying more shares
+        let newAveragePrice = existing.purchasePricePerShare;
+        if (sharesChange > 0) { // Only average if buying
+          newAveragePrice = ((existing.purchasePricePerShare * existing.sharesOwned) + (currentSharePrice * sharesChange)) / newTotalShares;
+        }
+        // If selling, the average purchase price doesn't change, only the number of shares
 
         const updatedPortfolio = [...prevPortfolio];
         updatedPortfolio[existingPropertyIndex] = {
@@ -101,15 +106,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           purchasePricePerShare: newAveragePrice,
         };
         return updatedPortfolio;
-      } else {
-        // Add new property to portfolio
-        return [...prevPortfolio, { propertyId, sharesOwned: shares, purchasePricePerShare: purchasePrice }];
+      } else if (sharesChange > 0) {
+        // Add new property to portfolio if buying and it doesn't exist
+        return [...prevPortfolio, { propertyId, sharesOwned: sharesChange, purchasePricePerShare: currentSharePrice }];
       }
+      return prevPortfolio; // Do nothing if trying to sell non-existent shares
     });
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, userPortfolio, signIn, signOut, addPropertyToUserPortfolio }}>
+    <AuthContext.Provider value={{ user, loading, userPortfolio, signIn, signOut, updatePropertyInUserPortfolio }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,15 +7,15 @@ import { Label } from "@/components/ui/label";
 import { DollarSign, Home } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { toast } from "sonner"; // Using sonner for toasts
+import { toast } from "sonner";
 import { useProperties } from '@/hooks/use-properties';
-import { useAuth } from '@/hooks/use-auth'; // Import useAuth
+import { useAuth } from '@/hooks/use-auth';
 
 const InvestmentPage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate(); // Initialize useNavigate
-  const { getPropertyById } = useProperties();
-  const { user, addPropertyToUserPortfolio } = useAuth(); // Get user and addPropertyToUserPortfolio from useAuth
+  const navigate = useNavigate();
+  const { getPropertyById, buyShares } = useProperties(); // Get buyShares
+  const { user, updatePropertyInUserPortfolio } = useAuth(); // Use updatePropertyInUserPortfolio
   const property = getPropertyById(parseInt(id || '0'));
 
   const [numberOfShares, setNumberOfShares] = React.useState<number>(1);
@@ -46,7 +46,7 @@ const InvestmentPage = () => {
     if (!isNaN(value) && value >= 1) {
       setNumberOfShares(value);
     } else if (e.target.value === '') {
-      setNumberOfShares(0); // Allow empty input temporarily
+      setNumberOfShares(0);
     }
   };
 
@@ -66,13 +66,13 @@ const InvestmentPage = () => {
       return;
     }
 
-    // If logged in, add property to user's portfolio
-    addPropertyToUserPortfolio(property.id, numberOfShares, property.currentSharePrice);
+    // Update property price in the market
+    buyShares(property.id, numberOfShares);
+    // Add/update property in user's portfolio
+    updatePropertyInUserPortfolio(property.id, numberOfShares, property.currentSharePrice);
 
     toast.success(`Successfully purchased ${numberOfShares} shares in ${property.name} for $${totalCost.toFixed(2)}!`);
     console.log(`Proceeding to payment for ${numberOfShares} shares of ${property.name}. Total: $${totalCost.toFixed(2)}`);
-    // In a real app, you'd integrate with a payment gateway here
-    // For now, we'll just show a toast and potentially redirect to My Properties
     navigate('/my-properties');
   };
 
@@ -107,7 +107,7 @@ const InvestmentPage = () => {
                   id="shares"
                   type="number"
                   min="1"
-                  value={numberOfShares === 0 ? '' : numberOfShares} // Display empty string for 0 to allow user to clear
+                  value={numberOfShares === 0 ? '' : numberOfShares}
                   onChange={handleSharesChange}
                   className="w-32 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-blue-200 dark:border-gray-700"
                 />
