@@ -24,13 +24,18 @@ const Navbar = () => {
             Properties
           </Button>
         </Link>
-        <Link to="/about-us"> {/* Updated to Link to the new About Us page */}
+        <Link to="/about-us">
           <Button variant="ghost" className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 mr-2">
             About Us
           </Button>
         </Link>
+        <Link to="/login"> {/* New Login button */}
+          <Button variant="ghost" className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 mr-2">
+            Login
+          </Button>
+        </Link>
         <Button
-          onClick={() => setIsSignUpDialogOpen(true)} // Open the dialog on click
+          onClick={() => setIsSignUpDialogOpen(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
         >
           Sign Up

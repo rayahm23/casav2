@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase"; // Import Supabase client
 
 interface SignUpDialogProps {
   isOpen: boolean;
@@ -20,19 +21,52 @@ interface SignUpDialogProps {
 const SignUpDialog: React.FC<SignUpDialogProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("Please enter both email and password.");
+    setIsLoading(true);
+
+    if (!email || !password || !confirmPassword) {
+      toast.error("Please fill in all fields.");
+      setIsLoading(false);
       return;
     }
-    // In a real application, you would send this data to your authentication backend
-    console.log('Sign Up Attempt:', { email, password });
-    toast.success("Sign up simulated! Check console for details.");
-    setEmail('');
-    setPassword('');
-    onClose();
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else if (data.user) {
+        toast.success("Sign up successful! Please check your email to confirm your account.");
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        onClose();
+      } else {
+        // This case might happen if email confirmation is required but no error is returned
+        toast.success("Sign up successful! Please check your email to confirm your account.");
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        onClose();
+      }
+    } catch (err: any) {
+      toast.error("An unexpected error occurred: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -71,9 +105,22 @@ const SignUpDialog: React.FC<SignUpDialogProps> = ({ isOpen, onClose }) => {
               required
             />
           </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="confirm-password" className="text-right text-gray-700 dark:text-gray-300">
+              Confirm Password
+            </Label>
+            <Input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="col-span-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-blue-200 dark:border-gray-700"
+              required
+            />
+          </div>
           <DialogFooter>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-              Sign Up
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white" disabled={isLoading}>
+              {isLoading ? 'Signing Up...' : 'Sign Up'}
             </Button>
           </DialogFooter>
         </form>
