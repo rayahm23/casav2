@@ -3,10 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Home, TrendingUp } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
+import Navbar from "@/components/Navbar"; // Import the new Navbar component
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
+      <Navbar /> {/* Add the Navbar here */}
+
       {/* Hero Section */}
       <section className="relative flex flex-col items-center justify-center text-center py-20 px-4 md:py-32">
         <div className="max-w-4xl mx-auto z-10">
