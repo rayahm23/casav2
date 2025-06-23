@@ -236,9 +236,11 @@ const PropertyDetailsPage = () => {
           </Card>
 
           <div className="text-center">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-              Invest in {property.name}
-            </Button>
+            <Link to={`/invest/${property.id}`}>
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                Invest in {property.name}
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
