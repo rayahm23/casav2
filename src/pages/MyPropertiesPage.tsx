@@ -10,14 +10,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 
 const MyPropertiesPage = () => {
-  const { user, loading: authLoading, userPortfolio } = useAuth(); // Get userPortfolio from useAuth
-  const { properties } = useProperties();
+  const { user, loading: authLoading, userPortfolio, updatePropertyInUserPortfolio } = useAuth();
+  const { properties, sellShares } = useProperties();
 
   const ownedProperties = React.useMemo(() => {
-    return userPortfolio.map(owned => { // Use userPortfolio directly
+    return userPortfolio.map(owned => {
       const property = properties.find(p => p.id === owned.propertyId);
       if (property) {
-        // Calculate profit/loss based on the user's specific purchase price
         const profitLoss = (property.currentSharePrice - owned.purchasePricePerShare) * owned.sharesOwned;
         const profitLossDirection = profitLoss >= 0 ? 'profit' : 'loss';
         return {
@@ -25,12 +24,12 @@ const MyPropertiesPage = () => {
           sharesOwned: owned.sharesOwned,
           profitLoss: profitLoss,
           profitLossDirection: profitLossDirection,
-          purchasePricePerShare: owned.purchasePricePerShare, // Include purchase price for display if needed
+          purchasePricePerShare: owned.purchasePricePerShare,
         };
       }
       return null;
-    }).filter(Boolean); // Filter out nulls if property not found
-  }, [properties, userPortfolio]); // Depend on userPortfolio
+    }).filter(Boolean);
+  }, [properties, userPortfolio]);
 
   if (authLoading) {
     return (
@@ -60,14 +59,23 @@ const MyPropertiesPage = () => {
     );
   }
 
-  const handleBuyShares = (propertyId: number) => {
-    toast.info(`Redirecting to buy shares for property ID: ${propertyId}`);
-    // In a real app, this would navigate to the investment page with pre-filled property ID
-  };
+  const handleSellShares = (propertyId: number, sharesOwned: number, currentSharePrice: number) => {
+    if (sharesOwned <= 0) {
+      toast.error("You don't have any shares to sell for this property.");
+      return;
+    }
+    const sharesToSell = 1; // For simplicity, sell 1 share at a time
+    if (sharesOwned < sharesToSell) {
+      toast.error(`You only have ${sharesOwned} shares. Cannot sell ${sharesToSell}.`);
+      return;
+    }
 
-  const handleSellShares = (propertyId: number) => {
-    toast.info(`Initiating sell process for property ID: ${propertyId}. (Feature coming soon!)`);
-    // In a real app, this would open a sell dialog or navigate to a sell page
+    // Update property price in the market
+    sellShares(propertyId, sharesToSell);
+    // Remove shares from user's portfolio
+    updatePropertyInUserPortfolio(propertyId, -sharesToSell, currentSharePrice);
+
+    toast.success(`Successfully sold ${sharesToSell} share(s) for property ID: ${propertyId}.`);
   };
 
   return (
@@ -122,7 +130,7 @@ const MyPropertiesPage = () => {
                       </Button>
                     </Link>
                     <Button
-                      onClick={() => handleSellShares(property.id)}
+                      onClick={() => handleSellShares(property.id, property.sharesOwned, property.currentSharePrice)}
                       className="w-full bg-red-600 hover:bg-red-700 text-white"
                     >
                       Sell Shares

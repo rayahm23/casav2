@@ -13,56 +13,62 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import SignUpDialog from '@/components/SignUpDialog'; // Import SignUpDialog
 
 const AuthPage = () => {
-  const { user, loading, signIn, signOut } = useAuth();
-  const { properties } = useProperties();
+  const { user, loading, signIn, signOut, userPortfolio } = useAuth(); // Get userPortfolio from useAuth
+  const { properties } = useProperties(); // Get properties from useProperties
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [isSignUpDialogOpen, setIsSignUpDialogOpen] = React.useState(false);
 
-  // Dummy portfolio data for demonstration
-  // In a real app, this would come from a database associated with the user
-  const userPortfolio = React.useMemo(() => {
-    // For demonstration, let's assume a logged-in user owns 10 shares of property 1 and 5 shares of property 3
-    const ownedShares = [
-      { propertyId: 1, shares: 10 },
-      { propertyId: 3, shares: 5 },
-    ];
+  // Calculate portfolio data dynamically
+  const portfolioData = React.useMemo(() => {
+    let totalShares = 0;
+    let currentValue = 0;
+    const portfolioValueHistory: { timestamp: number; value: number; name: string }[] = [];
 
-    const portfolioValueHistory: { timestamp: number; value: number }[] = [];
+    if (userPortfolio.length > 0 && properties.length > 0) {
+      // Aggregate all price histories from owned properties
+      const combinedHistoryMap = new Map<number, { timestamp: number; value: number }[]>();
 
-    // Calculate portfolio value over time based on property price history
-    // This is a simplified aggregation for demonstration
-    if (properties.length > 0) {
-      // Get the longest price history to ensure all points are covered
-      const maxHistoryLength = Math.max(...properties.map(p => p.priceHistory.length));
-      
-      for (let i = 0; i < maxHistoryLength; i++) {
-        let totalValueAtPoint = 0;
-        let timestamp = 0;
+      userPortfolio.forEach(owned => {
+        const property = properties.find(p => p.id === owned.propertyId);
+        if (property) {
+          totalShares += owned.sharesOwned;
+          currentValue += property.currentSharePrice * owned.sharesOwned;
 
-        ownedShares.forEach(owned => {
-          const property = properties.find(p => p.id === owned.propertyId);
-          if (property && property.priceHistory[i]) {
-            totalValueAtPoint += property.priceHistory[i].price * owned.shares;
-            timestamp = property.priceHistory[i].timestamp; // Use the timestamp from one of the properties
-          }
-        });
-        if (timestamp > 0) {
-          portfolioValueHistory.push({ timestamp, value: totalValueAtPoint });
+          property.priceHistory.forEach(historyPoint => {
+            if (!combinedHistoryMap.has(historyPoint.timestamp)) {
+              combinedHistoryMap.set(historyPoint.timestamp, []);
+            }
+            combinedHistoryMap.get(historyPoint.timestamp)?.push({
+              timestamp: historyPoint.timestamp,
+              value: historyPoint.price * owned.sharesOwned,
+            });
+          });
         }
-      }
+      });
+
+      // Sum values at each timestamp
+      const sortedTimestamps = Array.from(combinedHistoryMap.keys()).sort((a, b) => a - b);
+
+      sortedTimestamps.forEach(timestamp => {
+        let totalValueAtPoint = 0;
+        combinedHistoryMap.get(timestamp)?.forEach(point => {
+          totalValueAtPoint += point.value;
+        });
+        portfolioValueHistory.push({
+          timestamp,
+          value: totalValueAtPoint,
+          name: new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        });
+      });
     }
-    
+
     return {
-      totalShares: ownedShares.reduce((sum, item) => sum + item.shares, 0),
-      currentValue: portfolioValueHistory.length > 0 ? portfolioValueHistory[portfolioValueHistory.length - 1].value : 0,
-      portfolioValueHistory: portfolioValueHistory.map(data => ({
-        ...data,
-        // Format timestamp for display on X-axis if needed, or use a time formatter in Recharts
-        name: new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      })),
+      totalShares,
+      currentValue,
+      portfolioValueHistory,
     };
-  }, [properties]); // Recalculate when properties (and their prices) change
+  }, [userPortfolio, properties]); // Depend on userPortfolio and properties
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,8 +104,8 @@ const AuthPage = () => {
                     <CardTitle className="text-xl font-semibold text-blue-700 dark:text-blue-200">Portfolio Summary</CardTitle>
                   </CardHeader>
                   <CardContent className="text-gray-700 dark:text-gray-300 space-y-2">
-                    <p className="text-lg">Total Shares Owned: <span className="font-bold">{userPortfolio.totalShares}</span></p>
-                    <p className="text-lg">Current Portfolio Value: <span className="font-bold text-green-600">${userPortfolio.currentValue.toFixed(2)}</span></p>
+                    <p className="text-lg">Total Shares Owned: <span className="font-bold">{portfolioData.totalShares}</span></p>
+                    <p className="text-lg">Current Portfolio Value: <span className="font-bold text-green-600">${portfolioData.currentValue.toFixed(2)}</span></p>
                     <Link to="/my-properties"> {/* New link to MyPropertiesPage */}
                       <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
                         Explore My Properties
@@ -117,7 +123,7 @@ const AuthPage = () => {
                   <CardContent className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
-                        data={userPortfolio.portfolioValueHistory}
+                        data={portfolioData.portfolioValueHistory}
                         margin={{
                           top: 5,
                           right: 30,
