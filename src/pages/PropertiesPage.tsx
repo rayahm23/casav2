@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, DollarSign, TrendingUp } from "lucide-react";
+import { MapPin, DollarSign, TrendingUp, ArrowUp, ArrowDown } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import {
@@ -12,84 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// Helper function to parse string numbers with commas
-const parseNumber = (str: string) => parseFloat(str.replace(/,/g, ''));
-
-// Dummy data for properties
-const rawProperties = [
-  {
-    id: 1,
-    name: "Modern City Loft",
-    location: "San Francisco, CA",
-    price: "750,000",
-    sharesOutstanding: "10,000",
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 2,
-    name: "Cozy Lakeside Cabin",
-    location: "Lake Tahoe, CA",
-    price: "420,000",
-    sharesOutstanding: "7,500",
-    image: "https://images.unsplash.com/photo-1556912167-f556f1f39f7b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 3,
-    name: "Historic Townhouse",
-    location: "Boston, MA",
-    price: "980,000",
-    sharesOutstanding: "12,000",
-    image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 4,
-    name: "Beachfront Villa",
-    location: "Miami, FL",
-    price: "1,500,000",
-    sharesOutstanding: "15,000",
-    image: "https://images.unsplash.com/photo-1568605114251-327dd65f0d1c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 5,
-    name: "Mountain Retreat",
-    location: "Aspen, CO",
-    price: "1,100,000",
-    sharesOutstanding: "11,000",
-    image: "https://images.unsplash.com/photo-1580587771525-78b9dba38135?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 6,
-    name: "Urban Penthouse",
-    location: "Chicago, IL",
-    price: "890,000",
-    sharesOutstanding: "9,500",
-    image: "https://images.unsplash.com/photo-1513584684374-8bbb752f230d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-];
-
-// Calculate share price for each property
-const propertiesWithSharePrice = rawProperties.map(p => {
-  const parsedPrice = parseNumber(p.price);
-  const parsedSharesOutstanding = parseNumber(p.sharesOutstanding);
-  const sharePrice = parsedPrice / parsedSharesOutstanding;
-  return {
-    ...p,
-    sharePrice: sharePrice,
-  };
-});
+import { useProperties } from '@/hooks/use-properties'; // Updated import path
+import { parseNumber } from '@/data/properties'; // Import parseNumber
 
 const PropertiesPage = () => {
+  const { properties, simulateAllPricesChange } = useProperties(); // Use the hook
   const [sortAscending, setSortAscending] = React.useState(false);
   const [selectedRegion, setSelectedRegion] = React.useState<string>('All');
 
   const uniqueRegions = React.useMemo(() => {
-    const regions = new Set(propertiesWithSharePrice.map(p => p.location));
+    const regions = new Set(properties.map(p => p.location));
     return ['All', ...Array.from(regions).sort()];
-  }, []);
+  }, [properties]);
 
   const filteredAndSortedProperties = React.useMemo(() => {
-    let currentProperties = [...propertiesWithSharePrice];
+    let currentProperties = [...properties];
 
     // 1. Filter by region
     if (selectedRegion !== 'All') {
@@ -98,10 +35,10 @@ const PropertiesPage = () => {
 
     // 2. Sort by share price if enabled
     if (sortAscending) {
-      currentProperties.sort((a, b) => a.sharePrice - b.sharePrice);
+      currentProperties.sort((a, b) => a.currentSharePrice - b.currentSharePrice);
     }
     return currentProperties;
-  }, [sortAscending, selectedRegion]);
+  }, [sortAscending, selectedRegion, properties]); // Depend on properties to re-filter/sort on price change
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
@@ -149,13 +86,19 @@ const PropertiesPage = () => {
                     <TrendingUp className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" /> Shares Outstanding: {property.sharesOutstanding}
                   </p>
                   <p className="flex items-center font-semibold text-blue-700 dark:text-blue-200">
-                    <DollarSign className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" /> Share Price: ${property.sharePrice.toFixed(2)}
+                    <DollarSign className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" /> Share Price: ${property.currentSharePrice.toFixed(2)}
+                    {property.priceChangeDirection === 'up' && (
+                      <ArrowUp className="w-4 h-4 ml-1 text-green-500" />
+                    )}
+                    {property.priceChangeDirection === 'down' && (
+                      <ArrowDown className="w-4 h-4 ml-1 text-red-500" />
+                    )}
                   </p>
                 </CardContent>
                 <CardFooter>
                   <Link to={`/properties/${property.id}`} className="w-full">
                     <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                      Invest Now
+                      View Details
                     </Button>
                   </Link>
                 </CardFooter>
