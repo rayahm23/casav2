@@ -2,7 +2,7 @@ import React from 'react';
 import Navbar from "@/components/Navbar";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Handshake, DollarSign, Users, Scale, ShieldCheck } from "lucide-react";
+import { Search, Handshake, DollarSign, Users, Scale, ShieldCheck, TrendingUp, Wallet } from "lucide-react";
 
 const HowItWorksPage = () => {
   return (
@@ -50,21 +50,21 @@ const HowItWorksPage = () => {
 
             <Card className="text-center p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700">
               <CardHeader className="flex flex-col items-center">
-                <Users className="w-12 h-12 text-blue-600 dark:text-blue-400 mb-4" />
-                <CardTitle className="text-xl font-semibold text-blue-700 dark:text-blue-200">Professional Management</CardTitle>
+                <TrendingUp className="w-12 h-12 text-blue-600 dark:text-blue-400 mb-4" />
+                <CardTitle className="text-xl font-semibold text-blue-700 dark:text-blue-200">Like Investing in Stocks</CardTitle>
               </CardHeader>
               <CardContent className="text-gray-700 dark:text-gray-300">
-                We handle all aspects of property management, including tenant relations, maintenance, and legal compliance, so you don't have to.
+                Your property shares behave similarly to stocks. As demand for the property or its location rises, the value of your shares can increase, offering capital appreciation.
               </CardContent>
             </Card>
 
             <Card className="text-center p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-700">
               <CardHeader className="flex flex-col items-center">
-                <Scale className="w-12 h-12 text-blue-600 dark:text-blue-400 mb-4" />
-                <CardTitle className="text-xl font-semibold text-blue-700 dark:text-blue-200">Diversify Your Portfolio</CardTitle>
+                <Wallet className="w-12 h-12 text-blue-600 dark:text-blue-400 mb-4" />
+                <CardTitle className="text-xl font-semibold text-blue-700 dark:text-blue-200">Future Rent Income</CardTitle>
               </CardHeader>
               <CardContent className="text-gray-700 dark:text-gray-300">
-                Easily diversify your investments across multiple properties and locations, reducing risk and maximizing potential returns.
+                We're actively working on an option that will allow customers to invest and gain even more passive income directly through rental earnings, further enhancing your returns.
               </CardContent>
             </Card>
 
