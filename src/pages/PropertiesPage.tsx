@@ -128,7 +128,7 @@ const PropertiesPage = () => {
               onClick={() => setSortAscending(!sortAscending)}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {sortAscending ? "Show Default Order" : "Sort by Lowest Share Price"}
+              {sortAscending ? "Show Default Order" : "Sort by price"}
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -153,9 +153,11 @@ const PropertiesPage = () => {
                   </p>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    Invest Now
-                  </Button>
+                  <Link to={`/properties/${property.id}`} className="w-full">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                      Invest Now
+                    </Button>
+                  </Link>
                 </CardFooter>
               </Card>
             ))}
