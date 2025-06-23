@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Home, TrendingUp } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import Navbar from "@/components/Navbar";
-import HowItWorks from "@/components/HowItWorks"; // Import the new HowItWorks component
+import HowItWorks from "@/components/HowItWorks";
+import FeaturedProperties from "@/components/FeaturedProperties"; // Import the new FeaturedProperties component
 
 const LandingPage = () => {
   return (
@@ -69,7 +70,9 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <HowItWorks /> {/* Add the HowItWorks section here */}
+      <HowItWorks />
+
+      <FeaturedProperties /> {/* Add the FeaturedProperties section here */}
 
       {/* Call to Action Section */}
       <section className="py-16 px-4 text-center bg-blue-600 dark:bg-blue-900 text-white">
