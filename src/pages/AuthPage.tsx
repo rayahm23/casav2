@@ -100,7 +100,12 @@ const AuthPage = () => {
                   <CardContent className="text-gray-700 dark:text-gray-300 space-y-2">
                     <p className="text-lg">Total Shares Owned: <span className="font-bold">{userPortfolio.totalShares}</span></p>
                     <p className="text-lg">Current Portfolio Value: <span className="font-bold text-green-600">${userPortfolio.currentValue.toFixed(2)}</span></p>
-                    <Button onClick={signOut} className="mt-4 bg-red-600 hover:bg-red-700 text-white">
+                    <Link to="/my-properties"> {/* New link to MyPropertiesPage */}
+                      <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
+                        Explore My Properties
+                      </Button>
+                    </Link>
+                    <Button onClick={signOut} className="mt-4 ml-2 bg-red-600 hover:bg-red-700 text-white">
                       Logout
                     </Button>
                   </CardContent>

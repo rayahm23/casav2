@@ -15,6 +15,7 @@ export interface Property {
   rentPotentialData?: { month: string; rent: number }[];
   // Dynamic fields
   currentSharePrice: number;
+  initialSharePrice: number; // Added for profit/loss calculation
   priceChangeDirection: 'up' | 'down' | 'stable';
   priceHistory: { timestamp: number; price: number }[];
 }
@@ -159,6 +160,7 @@ export const initialProperties: Property[] = rawProperties.map(p => {
   return {
     ...p,
     currentSharePrice: initialSharePrice,
+    initialSharePrice: initialSharePrice, // Store the initial share price
     priceChangeDirection: 'stable',
     priceHistory: [{ timestamp: Date.now(), price: initialSharePrice }],
   };
