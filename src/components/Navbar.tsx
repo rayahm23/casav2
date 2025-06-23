@@ -29,7 +29,7 @@ const Navbar = () => {
             About Us
           </Button>
         </Link>
-        <Link to="/login"> {/* New Login button */}
+        <Link to="/auth"> {/* Updated Login button to redirect to /auth */}
           <Button variant="ghost" className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 mr-2">
             Login
           </Button>
