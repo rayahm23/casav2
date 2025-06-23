@@ -10,35 +10,27 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 
 const MyPropertiesPage = () => {
-  const { user, loading: authLoading } = useAuth();
-  const { properties, simulateAllPricesChange } = useProperties();
-
-  // Dummy owned shares data (replace with actual user data from backend in a real app)
-  const ownedSharesData = React.useMemo(() => {
-    if (!user) return []; // No owned shares if not logged in
-    // For demonstration, assume user owns shares in property 1 and property 3
-    return [
-      { propertyId: 1, sharesOwned: 10 },
-      { propertyId: 3, sharesOwned: 5 },
-    ];
-  }, [user]);
+  const { user, loading: authLoading, userPortfolio } = useAuth(); // Get userPortfolio from useAuth
+  const { properties } = useProperties();
 
   const ownedProperties = React.useMemo(() => {
-    return ownedSharesData.map(owned => {
+    return userPortfolio.map(owned => { // Use userPortfolio directly
       const property = properties.find(p => p.id === owned.propertyId);
       if (property) {
-        const profitLoss = (property.currentSharePrice - property.initialSharePrice) * owned.sharesOwned;
+        // Calculate profit/loss based on the user's specific purchase price
+        const profitLoss = (property.currentSharePrice - owned.purchasePricePerShare) * owned.sharesOwned;
         const profitLossDirection = profitLoss >= 0 ? 'profit' : 'loss';
         return {
           ...property,
           sharesOwned: owned.sharesOwned,
           profitLoss: profitLoss,
           profitLossDirection: profitLossDirection,
+          purchasePricePerShare: owned.purchasePricePerShare, // Include purchase price for display if needed
         };
       }
       return null;
     }).filter(Boolean); // Filter out nulls if property not found
-  }, [properties, ownedSharesData]);
+  }, [properties, userPortfolio]); // Depend on userPortfolio
 
   if (authLoading) {
     return (

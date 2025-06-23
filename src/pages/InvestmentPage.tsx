@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,11 +8,14 @@ import { DollarSign, Home } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { toast } from "sonner"; // Using sonner for toasts
-import { useProperties } from '@/hooks/use-properties'; // Import useProperties
+import { useProperties } from '@/hooks/use-properties';
+import { useAuth } from '@/hooks/use-auth'; // Import useAuth
 
 const InvestmentPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { getPropertyById } = useProperties(); // Use the hook
+  const navigate = useNavigate(); // Initialize useNavigate
+  const { getPropertyById } = useProperties();
+  const { user, addPropertyToUserPortfolio } = useAuth(); // Get user and addPropertyToUserPortfolio from useAuth
   const property = getPropertyById(parseInt(id || '0'));
 
   const [numberOfShares, setNumberOfShares] = React.useState<number>(1);
@@ -52,10 +55,25 @@ const InvestmentPage = () => {
       toast.error("Please enter a valid number of shares (at least 1).");
       return;
     }
-    // This is where you would integrate with a real payment gateway
-    toast.success(`Successfully initiated purchase of ${numberOfShares} shares in ${property.name} for $${totalCost.toFixed(2)}! (This is a simulation)`);
+
+    if (!user) {
+      toast.info("Please log in to make an investment.", {
+        action: {
+          label: "Login",
+          onClick: () => navigate('/auth'),
+        },
+      });
+      return;
+    }
+
+    // If logged in, add property to user's portfolio
+    addPropertyToUserPortfolio(property.id, numberOfShares, property.currentSharePrice);
+
+    toast.success(`Successfully purchased ${numberOfShares} shares in ${property.name} for $${totalCost.toFixed(2)}!`);
     console.log(`Proceeding to payment for ${numberOfShares} shares of ${property.name}. Total: $${totalCost.toFixed(2)}`);
-    // In a real app, you'd redirect to a payment provider or open a payment modal
+    // In a real app, you'd integrate with a payment gateway here
+    // For now, we'll just show a toast and potentially redirect to My Properties
+    navigate('/my-properties');
   };
 
   return (
