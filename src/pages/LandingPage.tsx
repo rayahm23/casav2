@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // Import Link
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Home, TrendingUp } from "lucide-react";
@@ -7,7 +8,7 @@ import Navbar from "@/components/Navbar";
 import HowItWorks from "@/components/HowItWorks";
 import FeaturedProperties from "@/components/FeaturedProperties";
 import AboutUs from "@/components/AboutUs";
-import Testimonials from "@/components/Testimonials"; // Import the new Testimonials component
+import Testimonials from "@/components/Testimonials";
 
 const LandingPage = () => {
   return (
@@ -23,9 +24,11 @@ const LandingPage = () => {
           <p className="text-lg md:text-xl mb-8 text-gray-700 dark:text-gray-300">
             Casa makes real estate investment accessible to everyone. Own shares in high-value properties and grow your wealth effortlessly.
           </p>
-          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-            Start Investing Today
-          </Button>
+          <Link to="/properties"> {/* Use Link for navigation */}
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+              Start Investing Today
+            </Button>
+          </Link>
         </div>
         <div className="absolute inset-0 opacity-10 dark:opacity-5 pointer-events-none">
           <Home className="w-full h-full text-blue-400 dark:text-blue-700" />
@@ -78,7 +81,7 @@ const LandingPage = () => {
 
       <AboutUs />
 
-      <Testimonials /> {/* Add the Testimonials section here */}
+      <Testimonials />
 
       {/* Call to Action Section */}
       <section className="py-16 px-4 text-center bg-blue-600 dark:bg-blue-900 text-white">
@@ -89,9 +92,11 @@ const LandingPage = () => {
           <p className="text-lg mb-8 opacity-90">
             Join thousands of smart investors who are leveraging Casa to access the lucrative real estate market.
           </p>
-          <Button size="lg" className="bg-white hover:bg-gray-100 text-blue-600 dark:text-blue-900 text-lg px-8 py-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-            Get Started with Casa
-          </Button>
+          <Link to="/properties"> {/* Use Link for navigation */}
+            <Button size="lg" className="bg-white hover:bg-gray-100 text-blue-600 dark:text-blue-900 text-lg px-8 py-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+              Get Started with Casa
+            </Button>
+          </Link>
         </div>
       </section>
 
