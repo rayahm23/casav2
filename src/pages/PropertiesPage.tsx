@@ -6,8 +6,11 @@ import { MapPin, DollarSign, TrendingUp } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 
+// Helper function to parse string numbers with commas
+const parseNumber = (str: string) => parseFloat(str.replace(/,/g, ''));
+
 // Dummy data for properties
-const properties = [
+const rawProperties = [
   {
     id: 1,
     name: "Modern City Loft",
@@ -58,7 +61,28 @@ const properties = [
   },
 ];
 
+// Calculate share price for each property
+const propertiesWithSharePrice = rawProperties.map(p => {
+  const parsedPrice = parseNumber(p.price);
+  const parsedSharesOutstanding = parseNumber(p.sharesOutstanding);
+  const sharePrice = parsedPrice / parsedSharesOutstanding;
+  return {
+    ...p,
+    sharePrice: sharePrice,
+  };
+});
+
 const PropertiesPage = () => {
+  const [sortAscending, setSortAscending] = React.useState(false);
+
+  const sortedProperties = React.useMemo(() => {
+    let currentProperties = [...propertiesWithSharePrice];
+    if (sortAscending) {
+      currentProperties.sort((a, b) => a.sharePrice - b.sharePrice);
+    }
+    return currentProperties;
+  }, [sortAscending]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
       <Navbar />
@@ -67,8 +91,16 @@ const PropertiesPage = () => {
           <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 text-blue-800 dark:text-blue-300">
             Available Properties
           </h1>
+          <div className="flex justify-end mb-8">
+            <Button
+              onClick={() => setSortAscending(!sortAscending)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {sortAscending ? "Show Default Order" : "Sort by Lowest Share Price"}
+            </Button>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {properties.map((property) => (
+            {sortedProperties.map((property) => (
               <Card key={property.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-950 border-blue-200 dark:border-gray-700">
                 <img src={property.image} alt={property.name} className="w-full h-48 object-cover rounded-t-lg" />
                 <CardHeader>
@@ -83,6 +115,9 @@ const PropertiesPage = () => {
                   </p>
                   <p className="flex items-center">
                     <TrendingUp className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" /> Shares Outstanding: {property.sharesOutstanding}
+                  </p>
+                  <p className="flex items-center font-semibold text-blue-700 dark:text-blue-200">
+                    <DollarSign className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" /> Share Price: ${property.sharePrice.toFixed(2)}
                   </p>
                 </CardContent>
                 <CardFooter>
