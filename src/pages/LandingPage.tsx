@@ -6,8 +6,8 @@ import { DollarSign, Home, TrendingUp } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import Navbar from "@/components/Navbar";
 import FeaturedProperties from "@/components/FeaturedProperties";
-import AboutUs from "@/components/AboutUs";
 import Testimonials from "@/components/Testimonials";
+import HowItWorks from "@/components/HowItWorks"; // Re-adding HowItWorks as it was removed from LandingPage previously
 
 const LandingPage = () => {
   return (
@@ -74,11 +74,9 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Removed HowItWorks component from here */}
+      <HowItWorks /> {/* Re-adding HowItWorks component here */}
 
       <FeaturedProperties />
-
-      <AboutUs />
 
       <Testimonials />
 
