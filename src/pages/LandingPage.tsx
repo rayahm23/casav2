@@ -6,7 +6,8 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import Navbar from "@/components/Navbar";
 import HowItWorks from "@/components/HowItWorks";
 import FeaturedProperties from "@/components/FeaturedProperties";
-import AboutUs from "@/components/AboutUs"; // Import the new AboutUs component
+import AboutUs from "@/components/AboutUs";
+import Testimonials from "@/components/Testimonials"; // Import the new Testimonials component
 
 const LandingPage = () => {
   return (
@@ -75,7 +76,9 @@ const LandingPage = () => {
 
       <FeaturedProperties />
 
-      <AboutUs /> {/* Add the AboutUs section here */}
+      <AboutUs />
+
+      <Testimonials /> {/* Add the Testimonials section here */}
 
       {/* Call to Action Section */}
       <section className="py-16 px-4 text-center bg-blue-600 dark:bg-blue-900 text-white">
