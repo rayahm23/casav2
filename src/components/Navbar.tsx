@@ -40,6 +40,11 @@ const Navbar = () => {
             Properties
           </Button>
         </Link>
+        <Link to="/index"> {/* New link for the Index page */}
+          <Button variant="ghost" className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 mr-2">
+            Index
+          </Button>
+        </Link>
         <Link to="/about-us">
           <Button variant="ghost" className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 mr-2">
             About Us
