@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { toast } from 'sonner';
@@ -13,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   userPortfolio: UserOwnedProperty[];
-  realizedProfitLoss: number; // New: Track realized profit/loss from sales
+  realizedProfitLoss: number;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updatePropertyInUserPortfolio: (propertyId: number, sharesChange: number, currentSharePrice: number) => void;
@@ -25,48 +25,83 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userPortfolio, setUserPortfolio] = useState<UserOwnedProperty[]>([]);
-  const [realizedProfitLoss, setRealizedProfitLoss] = useState<number>(0); // Initialize realized profit/loss
+  const [realizedProfitLoss, setRealizedProfitLoss] = useState<number>(0);
+
+  // Function to save user data to Supabase
+  const saveUserData = useCallback(async (userId: string, portfolio: UserOwnedProperty[], profitLoss: number) => {
+    const { error } = await supabase
+      .from('user_data')
+      .upsert({ user_id: userId, portfolio: portfolio, realized_profit_loss: profitLoss }, { onConflict: 'user_id' });
+
+    if (error) {
+      console.error("Error saving user data:", error.message);
+      toast.error("Failed to save portfolio data.");
+    }
+  }, []);
+
+  // Function to load user data from Supabase
+  const loadUserData = useCallback(async (userId: string) => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('user_data')
+      .select('portfolio, realized_profit_loss')
+      .eq('user_id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
+      console.error("Error loading user data:", error.message);
+      toast.error("Failed to load portfolio data.");
+    } else if (data) {
+      setUserPortfolio(data.portfolio || []);
+      setRealizedProfitLoss(data.realized_profit_loss || 0);
+    } else {
+      // If no data found, initialize with empty portfolio and 0 profit/loss
+      setUserPortfolio([]);
+      setRealizedProfitLoss(0);
+      // Also, create an initial entry in the database for this user
+      await saveUserData(userId, [], 0);
+    }
+    setLoading(false);
+  }, [saveUserData]);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
-        // In a real app, you'd fetch user's portfolio and realized profit/loss from your database here
-        setUserPortfolio([]);
-        setRealizedProfitLoss(0); // Reset for new session or load from DB
+        loadUserData(session.user.id);
       } else {
         setUser(null);
-        setUserPortfolio([]); // Clear portfolio on logout
-        setRealizedProfitLoss(0); // Clear realized profit/loss on logout
+        setUserPortfolio([]);
+        setRealizedProfitLoss(0);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    // Initial check
+    // Initial check on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        // In a real app, you'd fetch user's portfolio and realized profit/loss from your database here
-        setUserPortfolio([]);
-        setRealizedProfitLoss(0); // Reset for initial load or load from DB
+        loadUserData(session.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [loadUserData]);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error(error.message);
-    } else {
+    } else if (data.user) {
       toast.success("Logged in successfully!");
+      // Data will be loaded by the onAuthStateChange listener
     }
-    setLoading(false);
+    // setLoading(false) is handled by onAuthStateChange
   };
 
   const signOut = async () => {
@@ -76,13 +111,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.error(error.message);
     } else {
       toast.info("Logged out successfully.");
+      // State will be cleared by the onAuthStateChange listener
     }
-    setLoading(false);
+    // setLoading(false) is handled by onAuthStateChange
   };
 
-  const updatePropertyInUserPortfolio = (propertyId: number, sharesChange: number, currentSharePrice: number) => {
+  const updatePropertyInUserPortfolio = useCallback((propertyId: number, sharesChange: number, currentSharePrice: number) => {
     setUserPortfolio(prevPortfolio => {
       const existingPropertyIndex = prevPortfolio.findIndex(p => p.propertyId === propertyId);
+      let newRealizedProfitLoss = realizedProfitLoss;
+      let updatedPortfolio: UserOwnedProperty[];
 
       if (existingPropertyIndex > -1) {
         const existing = prevPortfolio[existingPropertyIndex];
@@ -92,35 +130,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const sharesSold = Math.abs(sharesChange);
           const profitPerShare = currentSharePrice - existing.purchasePricePerShare;
           const profitFromSale = profitPerShare * sharesSold;
-          setRealizedProfitLoss(prev => prev + profitFromSale); // Add to realized profit/loss
+          newRealizedProfitLoss += profitFromSale;
         }
 
         if (newTotalShares <= 0) {
-          // Remove property if shares drop to 0 or below
-          return prevPortfolio.filter(p => p.propertyId !== propertyId);
+          updatedPortfolio = prevPortfolio.filter(p => p.propertyId !== propertyId);
+        } else {
+          let newAveragePrice = existing.purchasePricePerShare;
+          if (sharesChange > 0) { // Only average if buying
+            newAveragePrice = ((existing.purchasePricePerShare * existing.sharesOwned) + (currentSharePrice * sharesChange)) / newTotalShares;
+          }
+          updatedPortfolio = [...prevPortfolio];
+          updatedPortfolio[existingPropertyIndex] = {
+            ...existing,
+            sharesOwned: newTotalShares,
+            purchasePricePerShare: newAveragePrice,
+          };
         }
-
-        // Calculate new average purchase price only if buying more shares
-        let newAveragePrice = existing.purchasePricePerShare;
-        if (sharesChange > 0) { // Only average if buying
-          newAveragePrice = ((existing.purchasePricePerShare * existing.sharesOwned) + (currentSharePrice * sharesChange)) / newTotalShares;
-        }
-        // If selling, the average purchase price doesn't change, only the number of shares
-
-        const updatedPortfolio = [...prevPortfolio];
-        updatedPortfolio[existingPropertyIndex] = {
-          ...existing,
-          sharesOwned: newTotalShares,
-          purchasePricePerShare: newAveragePrice,
-        };
-        return updatedPortfolio;
       } else if (sharesChange > 0) {
-        // Add new property to portfolio if buying and it doesn't exist
-        return [...prevPortfolio, { propertyId, sharesOwned: sharesChange, purchasePricePerShare: currentSharePrice }];
+        updatedPortfolio = [...prevPortfolio, { propertyId, sharesOwned: sharesChange, purchasePricePerShare: currentSharePrice }];
+      } else {
+        updatedPortfolio = prevPortfolio; // Do nothing if trying to sell non-existent shares
       }
-      return prevPortfolio; // Do nothing if trying to sell non-existent shares
+
+      setRealizedProfitLoss(newRealizedProfitLoss);
+
+      // Save updated data to Supabase if user is logged in
+      if (user) {
+        saveUserData(user.id, updatedPortfolio, newRealizedProfitLoss);
+      }
+      return updatedPortfolio;
     });
-  };
+  }, [realizedProfitLoss, user, saveUserData]);
 
   return (
     <AuthContext.Provider value={{ user, loading, userPortfolio, realizedProfitLoss, signIn, signOut, updatePropertyInUserPortfolio }}>
