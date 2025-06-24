@@ -13,6 +13,7 @@ const PropertiesContext = React.createContext<PropertiesContextType | undefined>
 
 // Factor to determine how much price changes per share bought/sold
 const PRICE_IMPACT_FACTOR = 0.0005; // 0.05% change per share
+const MAX_PRICE_HISTORY_LENGTH = 100; // Increased history length
 
 export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [properties, setProperties] = React.useState<Property[]>(initialProperties);
@@ -31,9 +32,8 @@ export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setProperties(prevProperties =>
       prevProperties.map(p => {
         if (p.id === propertyId) {
-          // Keep price history to a reasonable length, e.g., last 10 entries
           const updatedPriceHistory = [...p.priceHistory, { timestamp: Date.now(), price: newPrice }];
-          if (updatedPriceHistory.length > 10) {
+          if (updatedPriceHistory.length > MAX_PRICE_HISTORY_LENGTH) {
             updatedPriceHistory.shift(); // Remove the oldest entry
           }
           return {
@@ -52,13 +52,12 @@ export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setProperties(prevProperties =>
       prevProperties.map(p => {
         const oldPrice = p.currentSharePrice;
-        // Recalculate base price from initial string values to avoid compounding fluctuations
-        const baseSharePrice = parseNumber(p.price) / parseNumber(p.sharesOutstanding);
-        const newPrice = generateDynamicPrice(baseSharePrice);
+        // Base the new price on the current price, allowing it to drift
+        const newPrice = generateDynamicPrice(oldPrice);
         const direction = newPrice > oldPrice ? 'up' : newPrice < oldPrice ? 'down' : 'stable';
 
         const updatedPriceHistory = [...p.priceHistory, { timestamp: Date.now(), price: newPrice }];
-        if (updatedPriceHistory.length > 10) {
+        if (updatedPriceHistory.length > MAX_PRICE_HISTORY_LENGTH) {
           updatedPriceHistory.shift();
         }
 
@@ -78,7 +77,7 @@ export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (p.id === propertyId) {
           const newPrice = p.currentSharePrice * (1 + shares * PRICE_IMPACT_FACTOR);
           const updatedPriceHistory = [...p.priceHistory, { timestamp: Date.now(), price: newPrice }];
-          if (updatedPriceHistory.length > 10) {
+          if (updatedPriceHistory.length > MAX_PRICE_HISTORY_LENGTH) {
             updatedPriceHistory.shift();
           }
           return {
@@ -99,7 +98,7 @@ export const PropertiesProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (p.id === propertyId) {
           const newPrice = p.currentSharePrice * (1 - shares * PRICE_IMPACT_FACTOR);
           const updatedPriceHistory = [...p.priceHistory, { timestamp: Date.now(), price: newPrice }];
-          if (updatedPriceHistory.length > 10) {
+          if (updatedPriceHistory.length > MAX_PRICE_HISTORY_LENGTH) {
             updatedPriceHistory.shift();
           }
           return {
