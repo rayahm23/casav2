@@ -22,12 +22,14 @@ const ForSellersPage = () => {
             List your property on Casa and reach a wide network of fractional investors. Experience a seamless selling process with transparent terms.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
-            <Button size="lg" className="bg-green-700 hover:bg-green-800 text-white text-xl px-10 py-7 rounded-full shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl">
-              List Your Property
-            </Button>
-            <Link to="/how-it-works">
+            <Link to="/list-property"> {/* Changed redirect for List Your Property */}
+              <Button size="lg" className="bg-green-700 hover:bg-green-800 text-white text-xl px-10 py-7 rounded-full shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl">
+                List Your Property
+              </Button>
+            </Link>
+            <Link to="/auth"> {/* New button for Supplier Dashboard */}
               <Button size="lg" variant="outline" className="bg-white hover:bg-gray-100 text-green-700 dark:text-green-900 text-xl px-10 py-7 rounded-full shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl border-green-700 dark:border-green-300">
-                Learn More
+                Supplier Dashboard
               </Button>
             </Link>
           </div>
