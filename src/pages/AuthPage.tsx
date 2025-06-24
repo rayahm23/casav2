@@ -13,7 +13,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import SignUpDialog from '@/components/SignUpDialog';
 
 const AuthPage = () => {
-  const { user, loading, signIn, signOut, userPortfolio } = useAuth();
+  const { user, loading, signIn, signOut, userPortfolio, realizedProfitLoss } = useAuth(); // Get realizedProfitLoss
   const { properties } = useProperties();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -23,7 +23,7 @@ const AuthPage = () => {
   const portfolioData = React.useMemo(() => {
     let totalShares = 0;
     let currentValue = 0;
-    let totalProfitLoss = 0; // New: Total profit/loss
+    let totalUnrealizedProfitLoss = 0; // Profit/loss from currently held properties
     const portfolioValueHistory: { timestamp: number; value: number; name: string }[] = [];
 
     if (userPortfolio.length > 0 && properties.length > 0) {
@@ -34,7 +34,7 @@ const AuthPage = () => {
         if (property) {
           totalShares += owned.sharesOwned;
           currentValue += property.currentSharePrice * owned.sharesOwned;
-          totalProfitLoss += (property.currentSharePrice - owned.purchasePricePerShare) * owned.sharesOwned; // Calculate profit/loss
+          totalUnrealizedProfitLoss += (property.currentSharePrice - owned.purchasePricePerShare) * owned.sharesOwned; // Calculate unrealized profit/loss
 
           property.priceHistory.forEach(historyPoint => {
             if (!combinedHistoryMap.has(historyPoint.timestamp)) {
@@ -63,13 +63,16 @@ const AuthPage = () => {
       });
     }
 
+    const grandTotalProfitLoss = totalUnrealizedProfitLoss + realizedProfitLoss; // Sum unrealized and realized
+
     return {
       totalShares,
       currentValue,
-      totalProfitLoss, // Include in returned data
+      totalUnrealizedProfitLoss,
+      grandTotalProfitLoss, // Include grand total
       portfolioValueHistory,
     };
-  }, [userPortfolio, properties]);
+  }, [userPortfolio, properties, realizedProfitLoss]); // Add realizedProfitLoss to dependencies
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +91,7 @@ const AuthPage = () => {
     );
   }
 
-  const profitLossColorClass = portfolioData.totalProfitLoss >= 0 ? 'text-green-600' : 'text-red-600';
+  const profitLossColorClass = portfolioData.grandTotalProfitLoss >= 0 ? 'text-green-600' : 'text-red-600';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
@@ -109,7 +112,9 @@ const AuthPage = () => {
                   <CardContent className="text-gray-700 dark:text-gray-300 space-y-2">
                     <p className="text-lg">Total Shares Owned: <span className="font-bold">{portfolioData.totalShares}</span></p>
                     <p className="text-lg">Current Portfolio Value: <span className="font-bold text-green-600">${portfolioData.currentValue.toFixed(2)}</span></p>
-                    <p className="text-lg">Total Profit/Loss: <span className={`font-bold ${profitLossColorClass}`}>${portfolioData.totalProfitLoss.toFixed(2)}</span></p> {/* Display total profit/loss */}
+                    <p className="text-lg">Total Profit/Loss (Unrealized): <span className={`font-bold ${portfolioData.totalUnrealizedProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>${portfolioData.totalUnrealizedProfitLoss.toFixed(2)}</span></p>
+                    <p className="text-lg">Realized Profit/Loss: <span className={`font-bold ${realizedProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>${realizedProfitLoss.toFixed(2)}</span></p>
+                    <p className="text-lg">Grand Total Profit/Loss: <span className={`font-bold ${profitLossColorClass}`}>${portfolioData.grandTotalProfitLoss.toFixed(2)}</span></p> {/* Display grand total profit/loss */}
                     <Link to="/my-properties">
                       <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
                         Explore My Properties
@@ -122,7 +127,7 @@ const AuthPage = () => {
                 </Card>
                 <Card className="p-4 shadow-sm bg-blue-50 dark:bg-gray-900 border-blue-200 dark:border-gray-700">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-xl font-semibold text-blue-700 dark:text-blue-200">Portfolio Value Over Time</CardTitle>
+                    <CardTitle className="text-xl font-semibold text-blue-700 dark:text-blue-200">Current Portfolio Value Over Time</CardTitle>
                   </CardHeader>
                   <CardContent className="h-64">
                     <ResponsiveContainer width="100%" height="100%">

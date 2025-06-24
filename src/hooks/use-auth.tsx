@@ -13,6 +13,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   userPortfolio: UserOwnedProperty[];
+  realizedProfitLoss: number; // New: Track realized profit/loss from sales
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updatePropertyInUserPortfolio: (propertyId: number, sharesChange: number, currentSharePrice: number) => void;
@@ -24,18 +25,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userPortfolio, setUserPortfolio] = useState<UserOwnedProperty[]>([]);
+  const [realizedProfitLoss, setRealizedProfitLoss] = useState<number>(0); // Initialize realized profit/loss
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
-        // Simulate loading user's portfolio on login
-        // In a real app, you'd fetch this from your database
-        // For now, we'll keep it empty on fresh login to show dynamic additions
+        // In a real app, you'd fetch user's portfolio and realized profit/loss from your database here
         setUserPortfolio([]);
+        setRealizedProfitLoss(0); // Reset for new session or load from DB
       } else {
         setUser(null);
         setUserPortfolio([]); // Clear portfolio on logout
+        setRealizedProfitLoss(0); // Clear realized profit/loss on logout
       }
       setLoading(false);
     });
@@ -44,8 +46,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        // Simulate loading user's portfolio on initial load
+        // In a real app, you'd fetch user's portfolio and realized profit/loss from your database here
         setUserPortfolio([]);
+        setRealizedProfitLoss(0); // Reset for initial load or load from DB
       }
       setLoading(false);
     });
@@ -62,7 +65,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.error(error.message);
     } else {
       toast.success("Logged in successfully!");
-      // Portfolio will be set by onAuthStateChange listener
     }
     setLoading(false);
   };
@@ -74,7 +76,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.error(error.message);
     } else {
       toast.info("Logged out successfully.");
-      // Portfolio will be cleared by onAuthStateChange listener
     }
     setLoading(false);
   };
@@ -86,6 +87,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (existingPropertyIndex > -1) {
         const existing = prevPortfolio[existingPropertyIndex];
         const newTotalShares = existing.sharesOwned + sharesChange;
+
+        if (sharesChange < 0) { // Selling shares
+          const sharesSold = Math.abs(sharesChange);
+          const profitPerShare = currentSharePrice - existing.purchasePricePerShare;
+          const profitFromSale = profitPerShare * sharesSold;
+          setRealizedProfitLoss(prev => prev + profitFromSale); // Add to realized profit/loss
+        }
 
         if (newTotalShares <= 0) {
           // Remove property if shares drop to 0 or below
@@ -115,7 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, userPortfolio, signIn, signOut, updatePropertyInUserPortfolio }}>
+    <AuthContext.Provider value={{ user, loading, userPortfolio, realizedProfitLoss, signIn, signOut, updatePropertyInUserPortfolio }}>
       {children}
     </AuthContext.Provider>
   );
