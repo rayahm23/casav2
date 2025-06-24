@@ -7,6 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import { parseNumber } from '@/data/properties';
 import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button"; // Import Button
 
 const BASE_INDEX_VALUE = 1000; // Starting point for the index
 
