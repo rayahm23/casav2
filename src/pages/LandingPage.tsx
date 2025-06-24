@@ -5,8 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Home, TrendingUp } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import Navbar from "@/components/Navbar";
-import FeaturedProperties from "@/components/FeaturedProperties";
-import Testimonials from "@/components/Testimonials";
 import HowItWorks from "@/components/HowItWorks";
 import PropertyCarousel from '@/components/PropertyCarousel'; // Import the new carousel
 
@@ -78,10 +76,6 @@ const LandingPage = () => {
       </section>
 
       <HowItWorks />
-
-      <FeaturedProperties />
-
-      <Testimonials />
 
       {/* Call to Action Section */}
       <section className="py-20 px-4 text-center bg-blue-700 dark:bg-blue-900 text-white">
