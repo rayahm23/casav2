@@ -27,11 +27,18 @@ const LandingPage = () => {
             Casa makes real estate investment accessible to everyone. Own shares in high-value properties and grow your wealth effortlessly.
           </p>
           <PropertyCarousel /> {/* Insert the carousel here */}
-          <Link to="/properties">
-            <Button size="lg" className="bg-blue-700 hover:bg-blue-800 text-white text-xl px-10 py-7 rounded-full shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl mt-8">
-              Start Investing Today
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
+            <Link to="/properties">
+              <Button size="lg" className="bg-blue-700 hover:bg-blue-800 text-white text-xl px-10 py-7 rounded-full shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl">
+                Start Investing Today
+              </Button>
+            </Link>
+            <Link to="/index">
+              <Button size="lg" variant="outline" className="bg-white hover:bg-gray-100 text-blue-700 dark:text-blue-900 text-xl px-10 py-7 rounded-full shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl border-blue-700 dark:border-blue-300">
+                How are our properties doing?
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
