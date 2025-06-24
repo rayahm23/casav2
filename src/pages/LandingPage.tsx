@@ -7,7 +7,8 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import Navbar from "@/components/Navbar";
 import FeaturedProperties from "@/components/FeaturedProperties";
 import Testimonials from "@/components/Testimonials";
-import HowItWorks from "@/components/HowItWorks"; // Re-adding HowItWorks as it was removed from LandingPage previously
+import HowItWorks from "@/components/HowItWorks";
+import PropertyCarousel from '@/components/PropertyCarousel'; // Import the new carousel
 
 const LandingPage = () => {
   return (
@@ -27,8 +28,9 @@ const LandingPage = () => {
           <p className="text-xl md:text-2xl mb-10 text-gray-800 dark:text-gray-200 max-w-3xl mx-auto drop-shadow-md">
             Casa makes real estate investment accessible to everyone. Own shares in high-value properties and grow your wealth effortlessly.
           </p>
+          <PropertyCarousel /> {/* Insert the carousel here */}
           <Link to="/properties">
-            <Button size="lg" className="bg-blue-700 hover:bg-blue-800 text-white text-xl px-10 py-7 rounded-full shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl">
+            <Button size="lg" className="bg-blue-700 hover:bg-blue-800 text-white text-xl px-10 py-7 rounded-full shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl mt-8">
               Start Investing Today
             </Button>
           </Link>

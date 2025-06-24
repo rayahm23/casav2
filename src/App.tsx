@@ -12,6 +12,7 @@ import HowItWorksPage from "./pages/HowItWorksPage";
 import AboutUsPage from "./pages/AboutUsPage";
 import AuthPage from "./pages/AuthPage"; // Renamed from LoginPage
 import MyPropertiesPage from "./pages/MyPropertiesPage"; // Import MyPropertiesPage
+import IndexPage from "./pages/IndexPage"; // Import the new IndexPage
 import { PropertiesProvider } from "./hooks/use-properties";
 import { AuthProvider } from "./hooks/use-auth"; // Import AuthProvider
 
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/about-us" element={<AboutUsPage />} />
               <Route path="/auth" element={<AuthPage />} /> {/* Updated route path */}
               <Route path="/my-properties" element={<MyPropertiesPage />} /> {/* New route for My Properties */}
+              <Route path="/index" element={<IndexPage />} /> {/* New route for Index Page */}
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
