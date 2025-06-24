@@ -9,7 +9,7 @@ import { FileText, DollarSign, CheckCircle2, Users } from "lucide-react";
 const ForSellersPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
-      <Navbar hideAuthButtons={true} /> {/* Hide auth buttons on this page */}
+      <Navbar /> {/* Removed hideAuthButtons={true} */}
 
       {/* Hero Section for Sellers */}
       <section className="relative flex flex-col items-center justify-center text-center py-24 px-4 md:py-40 overflow-hidden">
