@@ -50,6 +50,11 @@ const Navbar = () => {
             About Us
           </Button>
         </Link>
+        <Link to="/for-sellers"> {/* New button for sellers */}
+          <Button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md mr-2">
+            For sellers
+          </Button>
+        </Link>
 
         {user ? (
           <DropdownMenu>
