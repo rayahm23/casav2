@@ -6,6 +6,7 @@ import { useProperties } from '@/hooks/use-properties';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import { parseNumber } from '@/data/properties';
+import { Link } from 'react-router-dom'; // Import Link
 
 const BASE_INDEX_VALUE = 1000; // Starting point for the index
 
@@ -171,6 +172,13 @@ const IndexPage = () => {
                       {regionIndex.change > 0 ? <ArrowUp className="w-5 h-5 mr-1" /> : regionIndex.change < 0 ? <ArrowDown className="w-5 h-5 mr-1" /> : null}
                       {regionIndex.change.toFixed(2)} ({regionIndex.changePercent.toFixed(2)}%)
                     </span>
+                  </div>
+                  <div className="text-center mt-4">
+                    <Link to={`/properties?region=${encodeURIComponent(regionIndex.region)}`}>
+                      <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                        Browse properties in this region
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom'; // Import useSearchParams
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, DollarSign, TrendingUp, ArrowUp, ArrowDown } from "lucide-react";
@@ -18,7 +18,21 @@ import { parseNumber } from '@/data/properties'; // Import parseNumber
 const PropertiesPage = () => {
   const { properties, simulateAllPricesChange } = useProperties(); // Use the hook
   const [sortAscending, setSortAscending] = React.useState(false);
-  const [selectedRegion, setSelectedRegion] = React.useState<string>('All');
+  const [searchParams, setSearchParams] = useSearchParams(); // Initialize useSearchParams
+
+  // Initialize selectedRegion from URL or default to 'All'
+  const initialRegion = searchParams.get('region') || 'All';
+  const [selectedRegion, setSelectedRegion] = React.useState<string>(initialRegion);
+
+  // Update URL param when selectedRegion changes
+  React.useEffect(() => {
+    if (selectedRegion === 'All') {
+      searchParams.delete('region');
+    } else {
+      searchParams.set('region', selectedRegion);
+    }
+    setSearchParams(searchParams);
+  }, [selectedRegion, searchParams, setSearchParams]);
 
   const uniqueRegions = React.useMemo(() => {
     const regions = new Set(properties.map(p => p.location));
@@ -49,7 +63,7 @@ const PropertiesPage = () => {
             Available Properties
           </h1>
           <div className="flex flex-col md:flex-row justify-end items-center gap-4 mb-8">
-            <Select onValueChange={setSelectedRegion} defaultValue={selectedRegion}>
+            <Select onValueChange={setSelectedRegion} value={selectedRegion}> {/* Set value prop */}
               <SelectTrigger className="w-[180px] bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 border-blue-200 dark:border-gray-700">
                 <SelectValue placeholder="Filter by Region" />
               </SelectTrigger>
