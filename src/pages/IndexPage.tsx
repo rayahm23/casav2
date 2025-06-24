@@ -41,9 +41,6 @@ const IndexPage = () => {
 
     // Calculate overall index
     const overallIndex = initialTotalMarketValue > 0 ? (currentTotalMarketValue / initialTotalMarketValue) * BASE_INDEX_VALUE : BASE_INDEX_VALUE;
-    const previousOverallIndexValue = overallIndexHistory.length > 1 ? overallIndexHistory[overallIndexHistory.length - 2].value : BASE_INDEX_VALUE; // Need to get previous from actual history
-    const overallChange = overallIndex - previousOverallIndexValue;
-    const overallChangePercent = previousOverallIndexValue > 0 ? (overallChange / previousOverallIndexValue) * 100 : 0;
 
     // Sort and format overall index history for chart
     const sortedTimestamps = Array.from(combinedPriceHistoryMap.keys()).sort((a, b) => a - b);
@@ -56,12 +53,25 @@ const IndexPage = () => {
       };
     });
 
+    // Calculate overall change based on the last two available points in the formatted history
+    let overallChange = 0;
+    let overallChangePercent = 0;
+
+    if (overallIndexHistoryFormatted.length >= 2) {
+      const lastValue = overallIndexHistoryFormatted[overallIndexHistoryFormatted.length - 1].value;
+      const secondLastValue = overallIndexHistoryFormatted[overallIndexHistoryFormatted.length - 2].value;
+      overallChange = lastValue - secondLastValue;
+      overallChangePercent = secondLastValue > 0 ? (overallChange / secondLastValue) * 100 : 0;
+    } else if (overallIndexHistoryFormatted.length === 1) {
+      // If only one point, compare to BASE_INDEX_VALUE
+      overallChange = overallIndex - BASE_INDEX_VALUE;
+      overallChangePercent = BASE_INDEX_VALUE > 0 ? (overallChange / BASE_INDEX_VALUE) * 100 : 0;
+    }
+    // If overallIndexHistoryFormatted.length is 0, change and percent remain 0, which is correct.
+
     // Calculate regional indices
     const calculatedRegionalIndices = Object.entries(regionalData).map(([region, data]) => {
       const regionalIndex = data.initialValue > 0 ? (data.currentValue / data.initialValue) * BASE_INDEX_VALUE : BASE_INDEX_VALUE;
-      // For simplicity, we'll use the current value as the "previous" for change calculation here,
-      // or we'd need to store regional history too. Let's use a simpler approach for now.
-      // A more robust solution would involve storing historical regional values.
       const regionalChange = regionalIndex - BASE_INDEX_VALUE; // Compare to base for simplicity
       const regionalChangePercent = BASE_INDEX_VALUE > 0 ? (regionalChange / BASE_INDEX_VALUE) * 100 : 0;
 
