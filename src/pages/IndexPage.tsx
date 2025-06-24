@@ -6,7 +6,7 @@ import { useProperties } from '@/hooks/use-properties';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import { parseNumber } from '@/data/properties';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link } from 'react-router-dom';
 
 const BASE_INDEX_VALUE = 1000; // Starting point for the index
 
@@ -92,6 +92,14 @@ const IndexPage = () => {
       regionalIndices: calculatedRegionalIndices,
     };
   }, [properties]);
+
+  console.log("IndexPage data:", {
+    overallIndex,
+    overallChange,
+    overallChangePercent,
+    overallIndexHistory,
+    regionalIndices,
+  });
 
   const getChangeColorClass = (change: number) => {
     if (change > 0) return 'text-green-600 dark:text-green-400';
