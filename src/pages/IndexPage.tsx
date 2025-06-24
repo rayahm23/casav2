@@ -93,14 +93,6 @@ const IndexPage = () => {
     };
   }, [properties]);
 
-  console.log("IndexPage data:", {
-    overallIndex,
-    overallChange,
-    overallChangePercent,
-    overallIndexHistory,
-    regionalIndices,
-  });
-
   const getChangeColorClass = (change: number) => {
     if (change > 0) return 'text-green-600 dark:text-green-400';
     if (change < 0) return 'text-red-600 dark:text-red-400';
